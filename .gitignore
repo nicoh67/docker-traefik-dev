@@ -1,0 +1,4 @@
+cert/*.crt 
+cert/*.key
+certs/*.pem
+traefik/traefik.log

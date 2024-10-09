@@ -1,0 +1,59 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"      # HTTP
+      - "443:443"
+      # - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # On map la conf statique dans le conteneur
+      # - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      # On map la conf dynamique statique dans le conteneur
+      # - ./traefik/config.yml:/etc/traefik/config.yml:ro
+      # Map the dynamic conf into the container
+      - ./traefik/:/etc/traefik/
+      # On map les certificats dans le conteneur
+      - ./certs:/etc/certs:ro
+
+    networks:
+      - web
+
+    # labels:
+      # Permettre à ce conteneur d'être accessible par traefik
+      # Pour plus d'information, voir : https://docs.traefik.io/providers/docker/#exposedbydefault
+      # - "traefik.enable=true"
+      # # Utilise la configuration du routeur "traefik" définie dans le fichier de configuration dynamique : ./traefik/config.yml
+      # - "traefik.http.routers.traefik=true"    
+      
+      # # - "traefik.http.services.mgt.loadbalancer.server.port=8080"
+      # - "traefik.http.routers.mgt.service=api@internal"
+      # - "traefik.http.routers.mgt.tls=true"
+      # - "traefik.http.routers.mgt.entrypoints=http,https"
+      # - "traefik.http.routers.mgt.rule=Host(`traefik.localhost`)"
+
+
+  whoami:
+    image: containous/whoami
+    container_name: whoami
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "traefik.enable=true"
+      # URL pour accéder à ce conteneur
+      - "traefik.http.routers.whoami.rule=Host(`whoami.dev.localhost`)"
+      # Activation de TLS
+      - "traefik.http.routers.whoami.tls=true"
+      - "traefik.http.routers.whoami.entrypoints=http,https"
+      # Si le port est différent de 80, utilisez le service suivant:
+      # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

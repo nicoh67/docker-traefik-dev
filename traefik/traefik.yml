@@ -1,0 +1,33 @@
+global:
+  sendAnonymousUsage: false
+
+api:
+  dashboard: true
+  insecure: true # Pour activer l'accès sans HTTPS au dashboard
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    watch: true
+    exposedByDefault: false  # Les conteneurs ne sont pas exposés par défaut
+
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true
+
+log:
+  level: ERROR
+  filePath: "/etc/traefik/traefik.log"
+  format: common
+
+entryPoints:
+  http:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+            to: https
+            scheme: "https"
+            # permanent: true  # Utilise une redirection 301 (permanente)
+  https:
+    address: ":443"
