@@ -31,7 +31,7 @@ Installez `mkcert` sur votre machine locale :
   ```
 
 - **Windows** :
-  - Le fichier mkcert.exe est déjà dans le dossier (téléchargeable à https://github.com/FiloSottile/mkcert).
+  - Le fichier mkcert.exe est déjà dans le dossier (téléchargeable sinon à https://github.com/FiloSottile/mkcert).
   - Ouvrez PowerShell (avec les droits administrateur) dans le dossier de votre projet.
   - Exécutez la commande suivante :
     ```Powershell
