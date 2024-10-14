@@ -1,0 +1,16 @@
+{
+    "name": "traefik-dashboard",
+    "version": "1.0.0",
+    "description": "Service to list domains configured in Traefik",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js"
+    },
+    "author": "Ton nom",
+    "license": "ISC",
+    "dependencies": {
+      "axios": "^1.4.0",
+      "express": "^4.18.2"
+    }
+  }
+  

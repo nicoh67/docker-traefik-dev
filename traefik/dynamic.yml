@@ -1,10 +1,10 @@
 http:
   routers:
     traefik:
+      entrypoints: "http,https"
       rule: "Host(`traefik.dev.localhost`)"
       service: "api@internal"
       tls: true
-
 
 tls:
   certificates:

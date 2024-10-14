@@ -11,10 +11,6 @@ services:
       # - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # On map la conf statique dans le conteneur
-      # - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      # On map la conf dynamique statique dans le conteneur
-      # - ./traefik/config.yml:/etc/traefik/config.yml:ro
       # Map the dynamic conf into the container
       - ./traefik/:/etc/traefik/
       # On map les certificats dans le conteneur
@@ -23,18 +19,99 @@ services:
     networks:
       - web
 
-    # labels:
-      # Permettre à ce conteneur d'être accessible par traefik
-      # Pour plus d'information, voir : https://docs.traefik.io/providers/docker/#exposedbydefault
-      # - "traefik.enable=true"
-      # # Utilise la configuration du routeur "traefik" définie dans le fichier de configuration dynamique : ./traefik/config.yml
-      # - "traefik.http.routers.traefik=true"    
-      
-      # # - "traefik.http.services.mgt.loadbalancer.server.port=8080"
-      # - "traefik.http.routers.mgt.service=api@internal"
-      # - "traefik.http.routers.mgt.tls=true"
-      # - "traefik.http.routers.mgt.entrypoints=http,https"
-      # - "traefik.http.routers.mgt.rule=Host(`traefik.localhost`)"
+
+  traefik-dashboard:
+      build:
+        context: ./traefik-dashboard  # Où tu as mis le Dockerfile et le code Node.js
+      container_name: traefik-dashboard
+      restart: unless-stopped
+      depends_on:
+        - traefik
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.traefik-dashboard.rule=Host(`localhost`)"
+        - "traefik.http.routers.traefik-dashboard.tls=true"
+        - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=3000"
+      networks:
+        - web
+
+  # Serveur BDD
+  mysql:
+    image: mariadb:latest
+    container_name: mysql
+    volumes:
+      - db-traefik-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - 3306:3306
+    restart: unless-stopped
+    networks:
+      - web
+
+  ## Serveur Adminer
+  adminer:
+    depends_on:
+      - mysql
+      - traefik
+    image: adminer
+    container_name: adminer
+    restart: unless-stopped
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - "traefik.enable=true"
+      # If port is different than 80, use the following service:
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.adminer.entrypoints=https" # Accès via HTTPS
+      # URL to reach this container
+      - "traefik.http.routers.adminer.rule=Host(`adminer.dev.localhost`)"
+      - "traefik.http.routers.adminer.tls=true"
+    networks:
+      - web
+    volumes:
+      - ./docker/adminer/default-orange.css:/var/www/html/adminer.css
+      - ./docker/adminer/logo.png:/var/www/html/logo.png
+      - ./docker/adminer/fonts/:/var/www/html/fonts
+
+
+  # Serveur phpmyadmin
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+        MYSQL_ROOT_PASSWORD: password
+        PMA_HOST: mysql
+        UPLOAD_LIMIT: 128M
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.phpmyadmin.rule=Host(`pma.dev.localhost`)"
+        - "traefik.http.routers.phpmyadmin.entrypoints=https"
+        - "traefik.http.routers.phpmyadmin.tls=true"
+    restart: always
+    volumes:
+        - /sessions
+    networks:
+        - web
+
+
+  # Serveur pour les mails de développement
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - 25:25
+    networks:
+      - web
+    user: root
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.mailhog.loadbalancer.server.port=8025
+      - traefik.http.routers.mailhog.entrypoints=https
+      - "traefik.http.routers.mailhog.rule=Host(`mailhog.dev.localhost`)"
+      - "traefik.http.routers.mailhog.tls=true"
+
 
 
   whoami:
@@ -48,11 +125,54 @@ services:
       - "traefik.http.routers.whoami.rule=Host(`whoami.dev.localhost`)"
       # Activation de TLS
       - "traefik.http.routers.whoami.tls=true"
-      - "traefik.http.routers.whoami.entrypoints=http,https"
+      - "traefik.http.routers.whoami.entrypoints=https"
       # Si le port est différent de 80, utilisez le service suivant:
       # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
     networks:
+    - web
+
+      
+
+  ## Serveurs NGINX & PHP 
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../sites:/var/www/html  # Même volume partagé avec PHP
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx.rule=HostRegexp(`.*.devphp.*.localhost`)"
+      - "traefik.http.routers.nginx.entrypoints=https"
+      - "traefik.http.routers.nginx.tls=true"
+      - "traefik.http.services.nginx.loadbalancer.server.port=80"
+    networks:
       - web
+
+
+  php74:
+    image: php:7.4-fpm
+    container_name: php-fpm74
+    restart: unless-stopped
+    volumes:
+      - ../sites:/var/www/html  # Montre tes sous-dossiers ici
+    networks:
+      - web
+
+  php82:
+    image: php:8.2-fpm
+    container_name: php-fpm82
+    restart: unless-stopped
+    volumes:
+      - ../sites:/var/www/html  # Montre tes sous-dossiers ici
+    networks:
+      - web
+
+
+volumes:
+  db-traefik-data:
 
 networks:
   web:
