@@ -141,7 +141,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ../sites:/var/www/html  # Même volume partagé avec PHP
+      - ../SITES:/var/www/html  # Même volume partagé avec PHP
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nginx.rule=HostRegexp(`.*.devphp.*.localhost`)"
@@ -157,7 +157,7 @@ services:
     container_name: php-fpm74
     restart: unless-stopped
     volumes:
-      - ../sites:/var/www/html  # Montre tes sous-dossiers ici
+      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
     networks:
       - web
 
@@ -166,7 +166,7 @@ services:
     container_name: php-fpm82
     restart: unless-stopped
     volumes:
-      - ../sites:/var/www/html  # Montre tes sous-dossiers ici
+      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
     networks:
       - web
 
