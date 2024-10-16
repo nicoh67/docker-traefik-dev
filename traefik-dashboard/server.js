@@ -1,7 +1,38 @@
 const express = require("express");
 const axios = require("axios");
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = 3000;
+
+const sitesPath = '/var/www/sites'; // Remplace par le chemin correct vers ton dossier des sites
+const nginxConfigPath = '/etc/nginx/nginx.conf'; // Chemin vers votre fichier nginx.conf
+
+// Configure EJS comme moteur de vue
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Fonction pour lire les dossiers de nginx
+function getNginxSites() {
+  return fs.readdirSync(sitesPath).filter(file => {
+    const filePath = path.join(sitesPath, file);
+    return fs.statSync(filePath).isDirectory();
+  });
+}
+
+// Fonction pour extraire les versions de PHP de nginx.conf
+function getPhpVersionsFromNginxConfig() {
+  const config = fs.readFileSync(nginxConfigPath, 'utf-8');
+  const regex = /fastcgi_pass\s+php-fpm(\d+)\:9000;/g;
+  const versions = [];
+  let match;
+
+  while ((match = regex.exec(config)) !== null) {
+    versions.push(match[1]);
+  }
+
+  return [...new Set(versions)]; // Rendre unique
+}
 
 // Fonction pour obtenir les routes Traefik
 async function fetchTraefikRoutes() {
@@ -19,7 +50,6 @@ async function fetchTraefikRoutes() {
       }
     }
     return ret;
-        
   } catch (error) {
     console.error("Erreur lors de la récupération des routes de Traefik:", error);
     return [];
@@ -29,52 +59,10 @@ async function fetchTraefikRoutes() {
 // Route principale pour afficher les liens
 app.get("/", async (req, res) => {
   const routes = await fetchTraefikRoutes();
-  console.log(routes);
-  
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Liste des domaines</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f9;
-                color: #333;
-                text-align: center;
-                padding: 20px;
-            }
-            h1 {
-                color: #4CAF50;
-                font-size: 2.5em;
-            }
-            a {
-                display:block;    
-                background-color: #fff;
-                margin: 10px;
-                padding: 15px;
-                border-radius: 5px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s ease;
-                text-decoration: none;
-                color: #2196F3;
-                font-weight: bold;
-            }
-            a:hover {
-                color: #0b7dda;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Domains Configured in Traefik</h1>
-        ${routes.map(route => `<div><a href="https://${route}">${route}</a></div>`).join('')}
-    </body>
-    </html>
-  `;
-
-  res.send(htmlContent);
+  const routes_nginx = getNginxSites();
+  // const routes2 = getNginxSites().map(site => (`${site}.devphp.localhost`));
+  const phpVersions = getPhpVersionsFromNginxConfig(); // Obtenez les versions de PHP
+  res.render('index', { routes, routes_nginx, phpVersions }); // Rendre le fichier EJS
 });
 
 // Démarrage du serveur

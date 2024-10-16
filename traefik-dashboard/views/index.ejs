@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des domaines</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #4CAF50;
+            font-size: 2em;
+        }
+        a {
+            display:block;    
+            background-color: #fff;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            text-decoration: none;
+            color: #2196F3;
+            font-weight: bold;
+        }
+        a:hover {
+            color: #0b7dda;
+        }
+
+        #container {
+            width: 100%;
+            display: flex;
+            gap: 3em;
+            justify-content: space-around;
+        }
+    </style>
+</head>
+<body>
+    <h1>Domains Configured</h1>
+    <div id="container">
+
+        <div class="bloc">
+            <h2>in Traefik</h2>
+            <% routes.forEach(route => { %>
+                <div><a href="https://<%= route %>"><%= route %></a></div>
+            <% }); %>
+        </div>
+        <% phpVersions.forEach((version, versionIndex) => { %>
+            <div class="bloc">
+                <h2>in NGINX (PHP v<%= version %>)</h2>
+                <% routes_nginx.forEach((route, routeIndex) => {
+                    route = route + ".devphp"+ (versionIndex === phpVersions.length - 1 ? "" : version) +".localhost"  %>
+                    <div><a href="https://<%= route %>"><%= route %></a></div>
+                <% }); %>
+            </div>
+        <% }); %>
+        <div class="bloc">
+            <h2>Versions PHP</h2>
+            <% phpVersions.forEach(version => { %>
+                <div><%= version %></div>
+            <% }); %>
+        </div>
+    </div>
+</body>
+</html>
