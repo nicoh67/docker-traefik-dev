@@ -33,6 +33,7 @@ services:
         - ./traefik-dashboard/views:/usr/src/app/views  # Monter le dossier views
       labels:
         - "traefik.enable=true"
+        - "traefik.http.routers.adminer.entrypoints=https" # Accès via HTTPS
         - "traefik.http.routers.traefik-dashboard.rule=Host(`localhost`)"
         - "traefik.http.routers.traefik-dashboard.tls=true"
         - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=3000"
