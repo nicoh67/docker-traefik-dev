@@ -59,7 +59,6 @@ docker-compose up -d
 
 ### Accéder aux services
 
-- **HTTP** : [http://localhost](http://localhost)
 - **HTTPS** : [https://localhost](https://localhost)
 
 Le certificat généré avec `mkcert` sera automatiquement reconnu comme valide dans votre navigateur.
