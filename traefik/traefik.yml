@@ -15,10 +15,10 @@ providers:
     filename: /etc/traefik/dynamic.yml
     watch: true
 
-log:
-  level: DEBUG
-  filePath: "/etc/traefik/traefik.log"
-  format: common
+# log:
+#   level: DEBUG
+#   filePath: "/etc/traefik/traefik.log"
+#   format: common
 
 entryPoints:
   http:

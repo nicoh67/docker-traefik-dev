@@ -43,7 +43,7 @@ Installez `mkcert` sur votre machine locale :
 Exécutez la commande suivante pour générer un certificat SSL auto-signé pour les domaines locaux `localhost` et `*.dev.localhost` :
 
 ```bash
-mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem localhost dev.localhost "*.dev.localhost" "*.devphp74.localhost" "*.devphp.localhost" "127.0.0.1"
+mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem localhost dev.localhost "*.dev.localhost" "*.devphp74.localhost" "*.devphp.localhost" "*.hirlemann.devphp.localhost" "*.hirlemann.devphp74.localhost" "*.hirlemann.localhost" "127.0.0.1"
 ```
 
 Les certificats seront générés dans le dossier `certs/`.
