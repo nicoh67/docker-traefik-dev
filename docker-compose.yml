@@ -29,6 +29,7 @@ services:
         - traefik
       volumes:
         - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+        - ./install-certs.sh:/install-certs.sh
         - ../SITES:/var/www/sites  # Même volume partagé avec PHP
         - ./traefik-dashboard/views:/usr/src/app/views  # Monter le dossier views
       labels:
