@@ -4,4 +4,5 @@ certs/*.pem
 traefik/traefik.log
 nginx_access.log
 nginx_error.log
+nginx/conf.d/*.conf
 install-certs.sh

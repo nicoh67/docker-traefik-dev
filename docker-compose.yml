@@ -1,4 +1,43 @@
 services:
+
+
+  php82:
+    image: php:8.2-fpm
+    container_name: php-fpm82
+    restart: unless-stopped
+    volumes:
+      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+    networks:
+      - web
+
+  php80:
+    image: php:8.0-fpm
+    container_name: php-fpm80
+    restart: unless-stopped
+    volumes:
+      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+    networks:
+      - web
+
+  php74:
+    image: php:7.4-fpm
+    container_name: php-fpm74
+    restart: unless-stopped
+    volumes:
+      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+    networks:
+      - web
+
+  php56:
+    image: php:5.6-fpm
+    container_name: php-fpm56
+    restart: unless-stopped
+    volumes:
+      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+    networks:
+      - web
+
+
   traefik:
     image: traefik:latest
     container_name: traefik
@@ -21,25 +60,52 @@ services:
 
 
   traefik-dashboard:
-      build:
-        context: ./traefik-dashboard  # Où tu as mis le Dockerfile et le code Node.js
-      container_name: traefik-dashboard
-      restart: unless-stopped
-      depends_on:
-        - traefik
-      volumes:
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-        - ./install-certs.sh:/install-certs.sh
-        - ../SITES:/var/www/sites  # Même volume partagé avec PHP
-        - ./traefik-dashboard/views:/usr/src/app/views  # Monter le dossier views
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.adminer.entrypoints=https" # Accès via HTTPS
-        - "traefik.http.routers.traefik-dashboard.rule=Host(`localhost`)"
-        - "traefik.http.routers.traefik-dashboard.tls=true"
-        - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=3000"
-      networks:
-        - web
+    build:
+      context: ./traefik-dashboard  # Où tu as mis le Dockerfile et le code Node.js
+    container_name: traefik-dashboard
+    restart: unless-stopped
+    depends_on:
+      - traefik
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./install-certs.sh:/install-certs.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../SITES:/var/www/sites  # Même volume partagé avec PHP
+      - ./traefik-dashboard/server.js:/usr/src/app/server.js  # Monter le fichier server.js
+      - ./traefik-dashboard/views:/usr/src/app/views  # Monter le dossier views
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.entrypoints=https" # Accès via HTTPS
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`localhost`)"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=3000"
+    networks:
+      - web
+
+
+
+  ## Serveurs NGINX & PHP 
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ../SITES:/var/www/html  # Même volume partagé avec PHP
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx.rule=HostRegexp(`.*.devphp.*.localhost`)"
+      - "traefik.http.routers.nginx.entrypoints=https"
+      - "traefik.http.routers.nginx.tls=true"
+      - "traefik.http.services.nginx.loadbalancer.server.port=80"
+    networks:
+      - web
+
+
+
 
   # Serveur BDD
   mysql:
@@ -138,43 +204,6 @@ services:
     - web
 
       
-
-  ## Serveurs NGINX & PHP 
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    restart: unless-stopped
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ../SITES:/var/www/html  # Même volume partagé avec PHP
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nginx.rule=HostRegexp(`.*.devphp.*.localhost`)"
-      - "traefik.http.routers.nginx.entrypoints=https"
-      - "traefik.http.routers.nginx.tls=true"
-      - "traefik.http.services.nginx.loadbalancer.server.port=80"
-    networks:
-      - web
-
-
-  php74:
-    image: php:7.4-fpm
-    container_name: php-fpm74
-    restart: unless-stopped
-    volumes:
-      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
-    networks:
-      - web
-
-  php82:
-    image: php:8.2-fpm
-    container_name: php-fpm82
-    restart: unless-stopped
-    volumes:
-      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
-    networks:
-      - web
 
 
 volumes:

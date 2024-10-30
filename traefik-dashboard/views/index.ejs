@@ -54,7 +54,7 @@
             <div class="bloc">
                 <h2>in NGINX (PHP v<%= version %>)</h2>
                 <% routes_nginx.forEach((route, routeIndex) => {
-                    route = route + ".devphp"+ (versionIndex === 0 ? "" : version) +".localhost"  %>
+                    route = route + ".devphp"+ (versionIndex == phpVersions.length-1 ? "" : version) +".localhost"  %>
                     <div><a href="https://<%= route %>"><%= route %></a></div>
                 <% }); %>
             </div>
