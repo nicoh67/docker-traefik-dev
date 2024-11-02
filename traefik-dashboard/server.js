@@ -23,9 +23,29 @@ function writeNginxConf(path, phpVersion, serviceName, confFile) {
     confFile = serviceName;
 
   const conf = `
+
+server {
+  listen 80;
+  server_name ~^(?<subsubdomain>.+)\\.(?<subdomain>.+)\\.devphp${phpVersion}\\.localhost$;
+
+  root /var/www/html/$subdomain/$subsubdomain;
+  index index.php index.html;
+
+  location ~ \.php$ {
+      include fastcgi_params;
+      fastcgi_pass ${serviceName}:9000;
+      fastcgi_index index.php;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+  }
+
+  location / {
+      try_files $uri $uri/ /index.php?$query_string;
+  }
+}
+
 server {
     listen 80;
-    server_name ~^(?<subdomain>.+)\.devphp${phpVersion}.localhost$;
+    server_name ~^(?<subdomain>.+)\\.devphp${phpVersion}\\.localhost$;
 
     root /var/www/html/$subdomain;
     index index.php;
@@ -40,7 +60,8 @@ server {
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
-}`;
+}
+`;
 
   // Écrire la configuration dans un fichier
   const confPath = path.join(outputDir, `nginx_${confFile}.conf`);
@@ -118,6 +139,31 @@ function getNginxSites() {
     return fs.statSync(filePath).isDirectory();
   });
 }
+
+
+function getNginxSitesAndSubsites() {
+  const sites = fs.readdirSync(sitesPath).flatMap(subdomain => {
+    const subdomainPath = path.join(sitesPath, subdomain);
+
+    if (fs.statSync(subdomainPath).isDirectory()) {
+      const subsubdomains = fs.readdirSync(subdomainPath)
+        .filter(subsubdomain => {
+          const subsubdomainPath = path.join(subdomainPath, subsubdomain);
+          return fs.statSync(subsubdomainPath).isDirectory();
+        })
+        .map(subsubdomain => `${subsubdomain}.${subdomain}`);
+
+      return [subdomain, ...subsubdomains];
+    }
+
+    return [];
+  });
+
+  return sites;
+}
+  
+
+
 
 // Fonction pour extraire les versions de PHP de nginx.conf
 function getPhpVersionsFromNginxConfig() {
@@ -209,10 +255,11 @@ app.get("/", async (req, res) => {
   generateMkcertCommand();
   const routes = await fetchTraefikRoutes();
   const routes_nginx = getNginxSites();
+  const routes_nginx_with_subsubdomains = getNginxSitesAndSubsites();
   // const routes2 = getNginxSites().map(site => (`${site}.devphp.localhost`));
   const phpVersions = await getPhpVersionsFromDocker(); // Obtenez les versions de PHP
   // const phpVersions = getPhpVersionsFromNginxConfig(); // Obtenez les versions de PHP
-  res.render('index', { routes, routes_nginx, phpVersions }); // Rendre le fichier EJS
+  res.render('index', { routes, routes_nginx, routes_nginx_with_subsubdomains, phpVersions }); // Rendre le fichier EJS
 });
 
 // Démarrage du serveur

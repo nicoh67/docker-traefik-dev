@@ -69,10 +69,12 @@
         <tr>
             <th class=group colspan="<%= phpVersions.length + 1 %>">NGINX</th>
         </tr>
-
-        <% routes_nginx.forEach((route, routeIndex) => { %>
+        
+        <% routes_nginx_with_subsubdomains.forEach((route, routeIndex) => { %>
         <tr>
-            <td><a href="https://<%= route + ".devphp.localhost" %>"><%= (route + ".devphp.localhost") %></a></td>
+            <td align="left"<% if(route.indexOf('.') > 0) { %> style="padding-left:2em; font-size:.9em"<% } %>>
+                <a href="https://<%= route + ".devphp.localhost" %>"><%= (route + ".devphp.localhost") %></a>
+            </td>
             <% phpVersions.forEach((version, versionIndex) => { %>
                 <td><a href="https://<%= route + ".devphp"+ version +".localhost" %>">PHP v<%= version %></a></td>
             <% }); %>
