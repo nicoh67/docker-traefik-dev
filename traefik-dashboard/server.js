@@ -94,7 +94,7 @@ async function getPhpVersionsFromDocker() {
 
       // Vérifier si l'image du conteneur est PHP
       if (data.Config.Image.startsWith('php:')) {
-        let version = (data.Config.Image.split(':')[1] || 'default').replace('-fpm', '').replace('.', '');
+        let version = data.Config.Image.split(':')[1] ? (data.Config.Image.split(':')[1] || 'default').replace('-fpm', '').replace('.', '') : "";
         return version; // Retourner la version pour cet élément
       }
       return null; // Retourner null si ce n'est pas une image PHP

@@ -40,18 +40,19 @@ Installez `mkcert` sur votre machine locale :
 
 ### Générer les certificats SSL pour les domaines locaux
 
-Exécutez la commande suivante pour générer un certificat SSL auto-signé pour les domaines locaux `localhost` et `*.dev.localhost` :
+Exécutez la commande suivante pour générer un certificat SSL auto-signé pour tous les domaines locaux et redémarrer traefik pour la prise en compte :
 
 ```bash
-mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem localhost dev.localhost "*.dev.localhost" "*.devphp74.localhost" "*.devphp.localhost" "*.hirlemann.devphp.localhost" "*.hirlemann.devphp74.localhost" "*.hirlemann.localhost" "127.0.0.1"
+./install-certs.sh
 ```
 
 Les certificats seront générés dans le dossier `certs/`.
+Les certificats générés avec `mkcert` seront automatiquement reconnus comme valides dans votre navigateur.
 
 
 ### Démarrer les services
 
-Démarrez Traefik et les services associés avec la commande suivante :
+Démarrez l'environnement de dév avec la commande suivante :
 
 ```bash
 docker-compose up -d
@@ -61,4 +62,3 @@ docker-compose up -d
 
 - **HTTPS** : [https://localhost](https://localhost)
 
-Le certificat généré avec `mkcert` sera automatiquement reconnu comme valide dans votre navigateur.

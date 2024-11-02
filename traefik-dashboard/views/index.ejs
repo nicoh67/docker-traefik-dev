@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_blank" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Liste des domaines</title>
     <style>
         body {
@@ -15,14 +16,15 @@
         h1 {
             color: #4CAF50;
             font-size: 2em;
+            margin-top: 0;
         }
         a {
-            display:block;    
+            display:inline-block;
             background-color: #fff;
-            margin: 10px;
-            padding: 15px;
+            margin: 5px;
+            padding: 6px 15px;
             border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease;
             text-decoration: none;
             color: #2196F3;
@@ -32,39 +34,52 @@
             color: #0b7dda;
         }
 
-        #container {
+        .sites {
             width: 100%;
-            display: flex;
-            gap: 3em;
-            justify-content: space-around;
+            border-collapse: collapse;
+        }
+        .sites tr:hover {
+            background-color: #4CAF5022;
+        }
+        .sites th, .sites td {
+            padding: 2px 5px;
+        }
+        .sites .group {
+            padding: 8px;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            background: #DDD;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <h1>Domains Configured</h1>
-    <div id="container">
-
-        <div class="bloc">
-            <h2>in Traefik</h2>
-            <% routes.forEach(route => { %>
-                <div><a href="https://<%= route %>"><%= route %></a></div>
-            <% }); %>
-        </div>
-        <% phpVersions.forEach((version, versionIndex) => { %>
-            <div class="bloc">
-                <h2>in NGINX (PHP v<%= version %>)</h2>
-                <% routes_nginx.forEach((route, routeIndex) => {
-                    route = route + ".devphp"+ (versionIndex == phpVersions.length-1 ? "" : version) +".localhost"  %>
-                    <div><a href="https://<%= route %>"><%= route %></a></div>
-                <% }); %>
-            </div>
+    <h1>Domaines configurés</h1>
+    <table class="sites" border="1" width="100%">
+        <tr>
+            <th class=group colspan="<%= phpVersions.length + 1 %>">Traefik</th>
+        </tr>
+        <tr>
+            <td colspan="<%= phpVersions.length + 1 %>">
+        <% routes.forEach(route => { %>
+            <a href="https://<%= route %>"><%= route %></a>
         <% }); %>
-        <div class="bloc">
-            <h2>Versions PHP</h2>
-            <% phpVersions.forEach(version => { %>
-                <div><%= version %></div>
+            </td>
+        </tr>
+        <tr>
+            <th class=group colspan="<%= phpVersions.length + 1 %>">NGINX</th>
+        </tr>
+
+        <% routes_nginx.forEach((route, routeIndex) => { %>
+        <tr>
+            <td><a href="https://<%= route + ".devphp.localhost" %>"><%= (route + ".devphp.localhost") %></a></td>
+            <% phpVersions.forEach((version, versionIndex) => { %>
+                <td><a href="https://<%= route + ".devphp"+ version +".localhost" %>">PHP v<%= version %></a></td>
             <% }); %>
-        </div>
-    </div>
+        </tr>
+        <% }); %>
+
+    </table>
+
 </body>
 </html>
