@@ -194,7 +194,7 @@ async function generateMkcertCommand() {
   mkcertDomains.push(...traefikDomains.map(domain => `"${domain}"`));
 
   // Créer la commande
-  const mkcertCommand = `mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem ${mkcertDomains.join(" ")}`;
+  const mkcertCommand = `mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem ${mkcertDomains.join(" ")}\n\ndocker restart traefik`;
 
   // Enregistrer la commande dans un fichier generate_certs.sh
   fs.writeFileSync('/install-certs.sh', `#!/bin/bash\n${mkcertCommand}\n`, { mode: 0o755 });

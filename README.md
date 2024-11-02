@@ -38,17 +38,6 @@ Installez `mkcert` sur votre machine locale :
     .\mkcert.exe -install
     ```
 
-### Générer les certificats SSL pour les domaines locaux
-
-Exécutez la commande suivante pour générer un certificat SSL auto-signé pour tous les domaines locaux et redémarrer traefik pour la prise en compte :
-
-```bash
-./install-certs.sh
-```
-
-Les certificats seront générés dans le dossier `certs/`.
-Les certificats générés avec `mkcert` seront automatiquement reconnus comme valides dans votre navigateur.
-
 
 ### Démarrer les services
 
@@ -58,7 +47,22 @@ Démarrez l'environnement de dév avec la commande suivante :
 docker-compose up -d
 ```
 
+
+### Générer les certificats SSL pour les domaines locaux
+
+Exécutez la commande suivante pour générer un certificat SSL auto-signé pour tous les domaines locaux et redémarrer ele docker traefik pour la prise en compte :
+
+```bash
+./install-certs.sh
+```
+
+Les certificats seront générés dans le dossier `certs/`.
+Les certificats générés avec `mkcert` seront automatiquement reconnus comme valides dans votre navigateur.
+
+
 ### Accéder aux services
 
-- **HTTPS** : [https://localhost](https://localhost)
+Accéder aux domaines configurés dans Traefix et dans NGINX à partir de :
+
+[https://localhost](https://localhost)
 
