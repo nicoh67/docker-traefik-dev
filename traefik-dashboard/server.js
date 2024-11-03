@@ -141,26 +141,55 @@ function getNginxSites() {
 }
 
 
+// function getNginxSitesAndSubsites() {
+//   const sites = fs.readdirSync(sitesPath).flatMap(subdomain => {
+//     const subdomainPath = path.join(sitesPath, subdomain);
+
+//     if (fs.statSync(subdomainPath).isDirectory()) {
+//       const subsubdomains = fs.readdirSync(subdomainPath)
+//         .filter(subsubdomain => {
+//           const subsubdomainPath = path.join(subdomainPath, subsubdomain);
+//           return fs.statSync(subsubdomainPath).isDirectory();
+//         })
+//         .map(subsubdomain => `${subsubdomain}.${subdomain}`);
+
+//       return [subdomain, ...subsubdomains];
+//     }
+
+//     return [];
+//   });
+
+//   return sites;
+// }
+
 function getNginxSitesAndSubsites() {
-  const sites = fs.readdirSync(sitesPath).flatMap(subdomain => {
+  return fs.readdirSync(sitesPath).flatMap(subdomain => {
     const subdomainPath = path.join(sitesPath, subdomain);
 
     if (fs.statSync(subdomainPath).isDirectory()) {
       const subsubdomains = fs.readdirSync(subdomainPath)
         .filter(subsubdomain => {
           const subsubdomainPath = path.join(subdomainPath, subsubdomain);
-          return fs.statSync(subsubdomainPath).isDirectory();
+
+          // Vérifie si le sous-sous-domaine est un dossier et qu'il contient un fichier index.php ou index.html
+          if (fs.statSync(subsubdomainPath).isDirectory()) {
+            const hasIndexFile = fs.existsSync(path.join(subsubdomainPath, 'index.php')) ||
+                                 fs.existsSync(path.join(subsubdomainPath, 'index.html'));
+            return hasIndexFile;
+          }
+
+          return false;
         })
         .map(subsubdomain => `${subsubdomain}.${subdomain}`);
 
+      // Ajoute le sous-domaine et les sous-sous-domaines valides
       return [subdomain, ...subsubdomains];
     }
 
     return [];
   });
-
-  return sites;
 }
+
   
 
 

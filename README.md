@@ -66,3 +66,8 @@ Accéder aux domaines configurés dans Traefix et dans NGINX à partir de :
 
 [https://localhost](https://localhost)
 
+#### Détection des sites NGINX
+
+Le listing affiche tous les domaines et les sous-domaines, dès lors qu'un fichier "index.[php|html]" existe dans le dossier.
+
+
