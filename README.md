@@ -9,10 +9,6 @@ Ce guide vous permet de configurer un environnement de développement local avec
 2. **Docker Compose** : Docker Compose doit également être installé.
 3. **mkcert** : Installez `mkcert` pour générer des certificats SSL auto-signés.
 
-### Créer un réseau docker 
-
-`docker network create web`
-
 ### Installation de `mkcert`
 
 Installez `mkcert` sur votre machine locale :
@@ -44,9 +40,10 @@ Installez `mkcert` sur votre machine locale :
 Démarrez l'environnement de dév avec la commande suivante :
 
 ```bash
-docker-compose up -d
+./start.sh
 ```
 
+Cela créera le réseau docker et le fichier .env s'ils n'existent pas, démarrera le codkcer-compose, et installera les certificats sur la machine locale (mkcert).
 
 ### Générer les certificats SSL pour les domaines locaux
 

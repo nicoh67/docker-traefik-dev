@@ -71,12 +71,12 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./install-certs.sh:/install-certs.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ../SITES:/var/www/sites  # Même volume partagé avec PHP
+      - ${SITES_FOLDER}:/var/www/sites  # Même volume partagé avec PHP
       - ./traefik-dashboard/server.js:/usr/src/app/server.js  # Monter le fichier server.js
       - ./traefik-dashboard/views:/usr/src/app/views  # Monter le dossier views
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.entrypoints=https" # Accès via HTTPS
+      - "traefik.http.routers.traefik-dashboard.entrypoints=https" # Accès via HTTPS
       - "traefik.http.routers.traefik-dashboard.rule=Host(`localhost`)"
       - "traefik.http.routers.traefik-dashboard.tls=true"
       - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=3000"
@@ -97,7 +97,7 @@ services:
       - ../SITES:/var/www/html  # Même volume partagé avec PHP
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nginx.rule=HostRegexp(`.*.devphp.*.localhost`)"
+      - "traefik.http.routers.nginx.rule=HostRegexp(`.*.${NGINX_DOMAIN}.*.localhost`)"
       - "traefik.http.routers.nginx.entrypoints=https"
       - "traefik.http.routers.nginx.tls=true"
       - "traefik.http.services.nginx.loadbalancer.server.port=80"
@@ -137,7 +137,7 @@ services:
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
       - "traefik.http.routers.adminer.entrypoints=https" # Accès via HTTPS
       # URL to reach this container
-      - "traefik.http.routers.adminer.rule=Host(`adminer.dev.localhost`)"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.${DEV_DOMAIN}.localhost`)"
       - "traefik.http.routers.adminer.tls=true"
     networks:
       - web
@@ -158,7 +158,7 @@ services:
         UPLOAD_LIMIT: 128M
     labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.phpmyadmin.rule=Host(`pma.dev.localhost`)"
+        - "traefik.http.routers.phpmyadmin.rule=Host(`pma.${DEV_DOMAIN}.localhost`)"
         - "traefik.http.routers.phpmyadmin.entrypoints=https"
         - "traefik.http.routers.phpmyadmin.tls=true"
     restart: always
@@ -181,7 +181,7 @@ services:
       - traefik.enable=true
       - traefik.http.services.mailhog.loadbalancer.server.port=8025
       - traefik.http.routers.mailhog.entrypoints=https
-      - "traefik.http.routers.mailhog.rule=Host(`mailhog.dev.localhost`)"
+      - "traefik.http.routers.mailhog.rule=Host(`mailhog.${DEV_DOMAIN}.localhost`)"
       - "traefik.http.routers.mailhog.tls=true"
 
 
@@ -194,7 +194,7 @@ services:
     labels:
       - "traefik.enable=true"
       # URL pour accéder à ce conteneur
-      - "traefik.http.routers.whoami.rule=Host(`whoami.dev.localhost`)"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.${DEV_DOMAIN}.localhost`)"
       # Activation de TLS
       - "traefik.http.routers.whoami.tls=true"
       - "traefik.http.routers.whoami.entrypoints=https"
