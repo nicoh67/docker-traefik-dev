@@ -9,7 +9,7 @@ Ce guide vous permet de configurer un environnement de développement local avec
 2. **Docker Compose** : Docker Compose doit également être installé.
 3. **mkcert** : Installez `mkcert` pour générer des certificats SSL auto-signés.
 
-### Installation de `mkcert`
+## Installation de `mkcert`
 
 Installez `mkcert` sur votre machine locale :
 
@@ -35,7 +35,7 @@ Installez `mkcert` sur votre machine locale :
     ```
 
 
-### Démarrer les services
+## Démarrer les services
 
 Démarrez l'environnement de dév avec la commande suivante :
 
@@ -43,11 +43,11 @@ Démarrez l'environnement de dév avec la commande suivante :
 ./start.sh
 ```
 
-Cela créera le réseau docker et le fichier .env s'ils n'existent pas, démarrera le codkcer-compose, et installera les certificats sur la machine locale (mkcert).
+Cela créera le réseau docker et le fichier .env s'ils n'existent pas, démarrera le docker-compose, et installera les certificats sur la machine locale (mkcert).
 
-### Générer les certificats SSL pour les domaines locaux
+## Générer les certificats SSL pour les domaines locaux
 
-Exécutez la commande suivante pour générer un certificat SSL auto-signé pour tous les domaines locaux et redémarrer ele docker traefik pour la prise en compte :
+Exécutez la commande suivante pour générer un certificat SSL auto-signé pour tous les domaines locaux et redémarrer le docker traefik pour la prise en compte :
 
 ```bash
 ./install-certs.sh
@@ -57,14 +57,25 @@ Les certificats seront générés dans le dossier `certs/`.
 Les certificats générés avec `mkcert` seront automatiquement reconnus comme valides dans votre navigateur.
 
 
-### Accéder aux services
+## Accéder aux services
 
 Accéder aux domaines configurés dans Traefix et dans NGINX à partir de :
 
 [https://localhost](https://localhost)
 
-#### Détection des sites NGINX
+
+### Détection des sites NGINX
 
 Le listing affiche tous les domaines et les sous-domaines, dès lors qu'un fichier "index.[php|html]" existe dans le dossier.
+
+
+## Accéder en HTTP (port 80)
+
+Pour pouvoir utiliser le port 80 avec Traefik, il suffit de décommenter les lignes du fichier `traefik/traefik.yml` :
+```yml
+entryPoints:
+  # http:
+  #   address: ":80"
+```
 
 

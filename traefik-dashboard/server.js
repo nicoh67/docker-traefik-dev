@@ -10,6 +10,7 @@ const docker = new Docker();  // Assurez-vous que Docker est accessible sans sud
 
 const sitesPath = '/var/www/sites'; // Remplace par le chemin correct vers ton dossier des sites
 const nginxConfigPath = '/etc/nginx/nginx.conf'; // Chemin vers votre fichier nginx.conf
+const nginxDefaultSiteConfigPath = '/etc/nginx/default-site.conf'; // Chemin vers le fichier default-site.conf
 const outputDir = '/etc/nginx/conf.d';
 
 // Configure EJS comme moteur de vue
@@ -21,47 +22,17 @@ app.set('views', path.join(__dirname, 'views'));
 function writeNginxConf(path, phpVersion, serviceName, confFile) {
   if(typeof confFile == "undefined")
     confFile = serviceName;
+  const confContent = fs.readFileSync(nginxDefaultSiteConfigPath, 'utf-8');
+  const variables = {
+    "phpVersion"  : phpVersion,
+    "serviceName" : serviceName,
+  };
 
-  const conf = `
-
-server {
-  listen 80;
-  server_name ~^(?<subsubdomain>.+)\\.(?<subdomain>.+)\\.devphp${phpVersion}\\.localhost$;
-
-  root /var/www/html/$subdomain/$subsubdomain;
-  index index.php index.html;
-
-  location ~ \.php$ {
-      include fastcgi_params;
-      fastcgi_pass ${serviceName}:9000;
-      fastcgi_index index.php;
-      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-  }
-
-  location / {
-      try_files $uri $uri/ /index.php?$query_string;
-  }
-}
-
-server {
-    listen 80;
-    server_name ~^(?<subdomain>.+)\\.devphp${phpVersion}\\.localhost$;
-
-    root /var/www/html/$subdomain;
-    index index.php;
-
-    location ~ \\.php$ {
-        include fastcgi_params;
-        fastcgi_pass ${serviceName}:9000;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-}
-`;
+  const conf = confContent.replace(/\${(\w+)}/g, (match, variableName) => {
+    if(variables.hasOwnProperty(variableName))
+      return variables[variableName];
+    return match; // Laisser le placeholder intact si la variable n'est pas définie
+  });
 
   // Écrire la configuration dans un fichier
   const confPath = path.join(outputDir, `nginx_${confFile}.conf`);
@@ -163,7 +134,7 @@ function getNginxSites() {
 // }
 
 function getNginxSitesAndSubsites() {
-  return fs.readdirSync(sitesPath).flatMap(subdomain => {
+  return [ ['phpinfo'], ...fs.readdirSync(sitesPath).flatMap(subdomain => {
     const subdomainPath = path.join(sitesPath, subdomain);
 
     if (fs.statSync(subdomainPath).isDirectory()) {
@@ -187,7 +158,7 @@ function getNginxSitesAndSubsites() {
     }
 
     return [];
-  });
+  })];
 }
 
   

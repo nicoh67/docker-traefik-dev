@@ -21,8 +21,8 @@ providers:
 #   format: common
 
 entryPoints:
-  http:
-    address: ":80"
+  # http:
+  #   address: ":80"
 
     # http:
     #   redirections:
