@@ -73,10 +73,10 @@
         <% routes_nginx_with_subsubdomains.forEach((route, routeIndex) => { %>
         <tr>
             <td align="left"<% if(route.indexOf('.') > 0) { %> style="padding-left:2em; font-size:.9em"<% } %>>
-                <a href="https://<%= route + ".devphp.localhost" %>"><%= (route + ".devphp.localhost") %></a>
+                <a href="https://<%= route + "."+ nginxDomain +".localhost" %>"><%= (route + "."+ nginxDomain +".localhost") %></a>
             </td>
             <% phpVersions.forEach((version, versionIndex) => { %>
-                <td><a href="https://<%= route + ".devphp"+ version +".localhost" %>">PHP v<%= version %></a></td>
+                <td><a href="https://<%= route + "." + nginxDomain + version +".localhost" %>">PHP v<%= version %></a></td>
             <% }); %>
         </tr>
         <% }); %>

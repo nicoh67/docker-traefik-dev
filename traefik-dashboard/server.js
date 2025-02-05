@@ -28,6 +28,11 @@ function writeNginxConf(path, phpVersion, serviceName, confFile) {
     "serviceName" : serviceName,
   };
 
+  // On ajoute les varaibles d'environnement dans les variables de champ de fusion pour la config nginx
+  Object.keys(process.env).forEach(key => {
+    variables[key] = process.env[key];
+  });
+
   const conf = confContent.replace(/\${(\w+)}/g, (match, variableName) => {
     if(variables.hasOwnProperty(variableName))
       return variables[variableName];
@@ -212,9 +217,8 @@ async function generateMkcertCommand() {
   const mkcertDomains = ['localhost', 'dev.localhost', '"*.dev.localhost"'];
 
   // Ajouter les domaines php versions NGINX
-  // mkcertDomains.push(`"*.devphp.localhost"`);
   phpVersions.forEach(version => {
-    mkcertDomains.push(`"*.devphp${version}.localhost"`);
+    mkcertDomains.push(`"*.${process.env.NGINX_DOMAIN}${version}.localhost"`);
 
     // Ajouter les sous-domaines NGINX
     nginxDomains.forEach(domain => {
@@ -224,12 +228,12 @@ async function generateMkcertCommand() {
           fs.statSync(path.join(subsubDomainsPath, file)).isDirectory()
         );
         subsubDomains.forEach(subsubDomain => {
-          mkcertDomains.push(`"${subsubDomain}.${domain}.devphp${version}.localhost"`);
+          mkcertDomains.push(`"${subsubDomain}.${domain}.${process.env.NGINX_DOMAIN}${version}.localhost"`);
         });
       }
      
-      // mkcertDomains.push(`"*.${domain}.devphp.localhost"`);
-      // phpVersions.forEach(version => mkcertDomains.push(`"*.${domain}.devphp${version}.localhost"`));
+      // mkcertDomains.push(`"*.${domain}.${process.env.NGINX_DOMAIN}.localhost"`);
+      // phpVersions.forEach(version => mkcertDomains.push(`"*.${domain}.${process.env.NGINX_DOMAIN}${version}.localhost"`));
     });
 
   });
@@ -256,10 +260,11 @@ app.get("/", async (req, res) => {
   const routes = await fetchTraefikRoutes();
   const routes_nginx = getNginxSites();
   const routes_nginx_with_subsubdomains = getNginxSitesAndSubsites();
-  // const routes2 = getNginxSites().map(site => (`${site}.devphp.localhost`));
+  // const routes2 = getNginxSites().map(site => (`${site}.${process.env.NGINX_DOMAIN}.localhost`));
   const phpVersions = await getPhpVersionsFromDocker(); // Obtenez les versions de PHP
+  const nginxDomain = process.env.NGINX_DOMAIN; // Obtenez les versions de PHP
   // const phpVersions = getPhpVersionsFromNginxConfig(); // Obtenez les versions de PHP
-  res.render('index', { routes, routes_nginx, routes_nginx_with_subsubdomains, phpVersions }); // Rendre le fichier EJS
+  res.render('index', { routes, routes_nginx, routes_nginx_with_subsubdomains, phpVersions, nginxDomain }); // Rendre le fichier EJS
 });
 
 // Démarrage du serveur

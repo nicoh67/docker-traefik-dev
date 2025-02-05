@@ -11,7 +11,7 @@ Ce guide vous permet de configurer un environnement de développement local avec
 
 ## Installation de `mkcert`
 
-Installez `mkcert` sur votre machine locale :
+Installez `mkcert` sur votre machine LOCALE (si vous êtes sous Windows avec WSL, **lancez mkcert sous Windows**, pas sous WSL) :
 
 - **MacOS** :
   ```bash
@@ -37,7 +37,7 @@ Installez `mkcert` sur votre machine locale :
 
 ## Démarrer les services
 
-Démarrez l'environnement de dév avec la commande suivante :
+Démarrez l'environnement de dév avec la commande suivante (vous aurez peut-être besoin de faire un `chmod +x start.sh` ):
 
 ```bash
 ./start.sh

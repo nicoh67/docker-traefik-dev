@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx/phpinfo:/var/www/phpinfo
-      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+      - ${SITES_FOLDER}:/var/www/html  # Montre tes sous-dossiers ici
     networks:
       - web
 
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx/phpinfo:/var/www/phpinfo
-      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+      - ${SITES_FOLDER}:/var/www/html  # Montre tes sous-dossiers ici
     networks:
       - web
 
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx/phpinfo:/var/www/phpinfo
-      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+      - ${SITES_FOLDER}:/var/www/html  # Montre tes sous-dossiers ici
     networks:
       - web
 
@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx/phpinfo:/var/www/phpinfo
-      - ../SITES:/var/www/html  # Montre tes sous-dossiers ici
+      - ${SITES_FOLDER}:/var/www/html  # Montre tes sous-dossiers ici
     networks:
       - web
 
@@ -49,7 +49,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - "80:80"      # HTTP
+      # - "80:80"      # HTTP
       - "443:443"
       # - "8080:8080"
     volumes:
@@ -70,6 +70,8 @@ services:
     restart: unless-stopped
     depends_on:
       - traefik
+    env_file:
+      - .env
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default-site.conf:/etc/nginx/default-site.conf
@@ -101,11 +103,15 @@ services:
       - ./nginx/default-site.conf:/etc/nginx/default-site.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/phpinfo:/var/www/phpinfo
-      - ../SITES:/var/www/html  # Même volume partagé avec PHP
+      - ${SITES_FOLDER}:/var/www/html  # Même volume partagé avec PHP
+    # ports:
+    #   - "8080:80"      # HTTP
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nginx.rule=HostRegexp(`.*.${NGINX_DOMAIN}.*.localhost`)"
-      - "traefik.http.routers.nginx.entrypoints=https"
+      # - "traefik.http.routers.nginx.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.${NGINX_DOMAIN}.localhost`)"
+      - "traefik.http.routers.nginx.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.${NGINX_DOMAIN}{phpversion:[0-9.]*}.localhost`)"
+      # - "traefik.http.routers.nginx.rule=HostRegexp(`.*.${NGINX_DOMAIN}.*.localhost`)"
+      - "traefik.http.routers.nginx.entrypoints=http,https"
       - "traefik.http.routers.nginx.tls=true"
       - "traefik.http.services.nginx.loadbalancer.server.port=80"
     networks:
@@ -123,7 +129,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=password
     ports:
-      - 3306:3306
+      - 33065:3306
     restart: unless-stopped
     networks:
       - web
