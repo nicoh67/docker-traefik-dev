@@ -263,8 +263,11 @@ app.get("/", async (req, res) => {
   // const routes2 = getNginxSites().map(site => (`${site}.${process.env.NGINX_DOMAIN}.localhost`));
   const phpVersions = await getPhpVersionsFromDocker(); // Obtenez les versions de PHP
   const nginxDomain = process.env.NGINX_DOMAIN; // Obtenez les versions de PHP
+  const sitesFolderSystem = process.env.SITES_FOLDER_SYSTEM; // Dossier des SITES
+  console.log(sitesFolderSystem);
+  
   // const phpVersions = getPhpVersionsFromNginxConfig(); // Obtenez les versions de PHP
-  res.render('index', { routes, routes_nginx, routes_nginx_with_subsubdomains, phpVersions, nginxDomain }); // Rendre le fichier EJS
+  res.render('index', { routes, routes_nginx, routes_nginx_with_subsubdomains, phpVersions, nginxDomain, sitesFolderSystem }); // Rendre le fichier EJS
 });
 
 // Démarrage du serveur
