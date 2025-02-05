@@ -246,9 +246,9 @@ async function generateMkcertCommand() {
   // Créer la commande
   const mkcertCommand = `mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem ${mkcertDomains.join(" ")}\n\ndocker restart traefik`;
 
-  // Enregistrer la commande dans un fichier generate_certs.sh
+  // Enregistrer la commande dans un fichier install-certs.sh
   fs.writeFileSync('/install-certs.sh', `#!/bin/bash\n${mkcertCommand}\n`, { mode: 0o755 });
-  console.log("La commande mkcert a été enregistrée dans generate_certs.sh");
+  console.log("La commande mkcert a été enregistrée dans install-certs.sh");
 
 }
 
