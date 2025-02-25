@@ -3,6 +3,7 @@ const express = require("express");
 const axios = require("axios");
 const fs = require('fs');
 const path = require('path');
+const { version } = require('os');
 const app = express();
 const port = 3000;
 
@@ -50,34 +51,40 @@ function writeNginxConf(path, phpVersion, serviceName, confFile) {
 async function generateConfigsFromDocker() {
   const versions = await getPhpVersionsFromDocker();
   let latestVersion = versions[versions.length-1];
+
+  versions.forEach( phpVersion => {
+    const serviceName = "php-fpm"+ phpVersion;
+    writeNginxConf(path, (phpVersion == latestVersion ? "" : phpVersion), serviceName);
+  });
   
 
-  try {
-    const containers = await docker.listContainers();
+  // try {
+  //   const containers = await docker.listContainers();
 
-    containers.forEach(async (containerInfo) => {
-      const container = docker.getContainer(containerInfo.Id);
-      const data = await container.inspect();
+  //   containers.forEach(async (containerInfo) => {
+  //     const container = docker.getContainer(containerInfo.Id);
+  //     const data = await container.inspect();
       
-      // Vérifier si l'image du conteneur est PHP
-      if (data.Config.Image.startsWith('php:')) {
-        const phpVersion = (data.Config.Image.split(':')[1] || 'default').replace('-fpm', '').replace('.', '');
-        const serviceName = data.Name.replace(/^\//, '');  // Retirer le slash du début
+  //     // Vérifier si l'image du conteneur est PHP
+  //     if (data.Config.Image.startsWith('php:')) {
+  //       const phpVersion = (data.Config.Image.split(':')[1] || 'default').replace('-fpm', '').replace('.', '');
+  //       const serviceName = data.Name.replace(/^\//, '');  // Retirer le slash du début
         
-        // Si c'est la dernière version PHP installée, on la choisi par défaut
-        if(phpVersion == latestVersion)
-          writeNginxConf(path, "", serviceName, "");
+  //       // Si c'est la dernière version PHP installée, on la choisi par défaut
+  //       if(phpVersion == latestVersion)
+  //         writeNginxConf(path, "", serviceName, "");
 
-        writeNginxConf(path, phpVersion, serviceName);
-      }
-    });
-  } catch (error) {
-    console.error("Erreur lors de la génération des configurations NGINX:", error);
-  }
+  //       writeNginxConf(path, phpVersion, serviceName);
+  //     }
+  //   });
+  // } catch (error) {
+  //   console.error("Erreur lors de la génération des configurations NGINX:", error);
+  // }
 }
 
 
 // Fonction pour extraire les versions de PHP de nginx.conf
+/*
 async function getPhpVersionsFromDocker() {
   let versions = [];
 
@@ -90,7 +97,7 @@ async function getPhpVersionsFromDocker() {
       const data = await container.inspect();
 
       // Vérifier si l'image du conteneur est PHP
-      if (data.Config.Image.startsWith('php:')) {
+      if (data.Config.Image.startsWith('PHP_VERSION:')) {
         let version = data.Config.Image.split(':')[1] ? (data.Config.Image.split(':')[1] || 'default').replace('-fpm', '').replace('.', '') : "";
         return version; // Retourner la version pour cet élément
       }
@@ -105,6 +112,32 @@ async function getPhpVersionsFromDocker() {
   }
 
   return [...new Set(versions)].sort((a, b) => a - b); // Rendre unique et trier
+}
+*/
+async function getPhpVersionsFromDocker() {
+  let versions = [];
+
+  try {
+    const containers = await docker.listContainers({ all: true });
+    console.log("Containers trouvés :", containers.map(c => c.Image));
+
+    const versionPromises = containers.map(async (containerInfo) => {
+      
+      const containerName = containerInfo.Names[0] || ""; // Premier nom du conteneur
+      const match = containerName.match(/php-fpm(\d+)/); // Regex pour extraire la version
+      if(match && match.length > 1)
+        return match[1];
+      return null;
+    });
+
+    // Attendre toutes les promesses et filtrer les valeurs nulles
+    const results = await Promise.all(versionPromises);
+    versions = results.filter(version => version !== null);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des versions PHP :", error);
+  }
+
+  return [...new Set(versions)].sort((a, b) => parseFloat(a) - parseFloat(b)); // Trie numériquement
 }
 
 
@@ -143,15 +176,24 @@ function getNginxSitesAndSubsites() {
     const subdomainPath = path.join(sitesPath, subdomain);
 
     if (fs.statSync(subdomainPath).isDirectory()) {
+      const validPublicDirs = ['public', 'public_html'];
+      const hasPublicDir = validPublicDirs.some(dir => fs.existsSync(path.join(subdomainPath, dir)));
+
+      if (hasPublicDir) {
+        return [subdomain]; // Ajoute le sous-domaine s'il contient un "public" ou "public_html"
+      }
+
       const subsubdomains = fs.readdirSync(subdomainPath)
         .filter(subsubdomain => {
           const subsubdomainPath = path.join(subdomainPath, subsubdomain);
 
           // Vérifie si le sous-sous-domaine est un dossier et qu'il contient un fichier index.php ou index.html
           if (fs.statSync(subsubdomainPath).isDirectory()) {
-            const hasIndexFile = fs.existsSync(path.join(subsubdomainPath, 'index.php')) ||
-                                 fs.existsSync(path.join(subsubdomainPath, 'index.html'));
-            return hasIndexFile;
+            const hasPublicDir = validPublicDirs.some(dir => fs.existsSync(path.join(subsubdomainPath, dir)));
+            return hasPublicDir;
+            // const hasIndexFile = fs.existsSync(path.join(subsubdomainPath, 'index.php')) ||
+            //                      fs.existsSync(path.join(subsubdomainPath, 'index.html'));
+            // return hasIndexFile;
           }
 
           return false;
