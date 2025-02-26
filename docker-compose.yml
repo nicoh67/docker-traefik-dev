@@ -112,6 +112,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default-site.conf:/etc/nginx/default-site.conf
+      - ./nginx/default-server.conf:/etc/nginx/default-server.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/phpinfo:/var/www/phpinfo
       - ${SITES_FOLDER}:/var/www/html  # Même volume partagé avec PHP

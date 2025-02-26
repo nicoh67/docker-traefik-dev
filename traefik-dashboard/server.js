@@ -54,7 +54,9 @@ async function generateConfigsFromDocker() {
 
   versions.forEach( phpVersion => {
     const serviceName = "php-fpm"+ phpVersion;
-    writeNginxConf(path, (phpVersion == latestVersion ? "" : phpVersion), serviceName);
+    if(phpVersion == latestVersion)
+      writeNginxConf(path, "", serviceName, "");
+    writeNginxConf(path, phpVersion, serviceName);
   });
   
 
@@ -267,7 +269,8 @@ async function generateMkcertCommand() {
       const subsubDomainsPath = path.join(sitesPath, domain);
       if (fs.existsSync(subsubDomainsPath)) {
         const subsubDomains = fs.readdirSync(subsubDomainsPath).filter(file => 
-          fs.statSync(path.join(subsubDomainsPath, file)).isDirectory()
+          fs.statSync(path.join(subsubDomainsPath, file)).isDirectory() &&
+          !file.startsWith(".") // Ignore les dossiers commençant par "."
         );
         subsubDomains.forEach(subsubDomain => {
           mkcertDomains.push(`"${subsubDomain}.${domain}.${process.env.NGINX_DOMAIN}${version}.localhost"`);
