@@ -1,11 +1,11 @@
 services:
 
-  php82:
+  php84:
     build:
       context: ./php
       args:
-        PHP_VERSION: 8.2
-    container_name: php-fpm82
+        PHP_VERSION: 8.4
+    container_name: php-fpm84
     restart: unless-stopped
     volumes:
       - ./nginx/phpinfo:/var/www/phpinfo
@@ -13,12 +13,12 @@ services:
     networks:
       - web
 
-  php80:
+  php82:
     build:
       context: ./php
       args:
-        PHP_VERSION: 8.0
-    container_name: php-fpm80
+        PHP_VERSION: 8.2
+    container_name: php-fpm82
     restart: unless-stopped
     volumes:
       - ./nginx/phpinfo:/var/www/phpinfo
@@ -107,6 +107,8 @@ services:
 
   nginx:
     image: nginx:latest
+    depends_on:
+      - traefik-dashboard
     container_name: nginx
     restart: unless-stopped
     volumes:

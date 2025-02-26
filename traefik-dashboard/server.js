@@ -12,12 +12,24 @@ const docker = new Docker();  // Assurez-vous que Docker est accessible sans sud
 const sitesPath = '/var/www/sites'; // Remplace par le chemin correct vers ton dossier des sites
 const nginxConfigPath = '/etc/nginx/nginx.conf'; // Chemin vers votre fichier nginx.conf
 const nginxDefaultSiteConfigPath = '/etc/nginx/default-site.conf'; // Chemin vers le fichier default-site.conf
-const outputDir = '/etc/nginx/conf.d';
+const nginxConfsDir = '/etc/nginx/conf.d';
 
 // Configure EJS comme moteur de vue
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+
+// Fonction pour vider le dossier conf.d avant de recréer les fichiers
+function cleanConfDir() {
+  if (fs.existsSync(nginxConfsDir)) {
+      fs.readdirSync(nginxConfsDir).forEach(file => {
+          const filePath = path.join(nginxConfsDir, file);
+          if (fs.statSync(filePath).isFile()) {
+              fs.unlinkSync(filePath);
+          }
+      });
+  }
+}
 
 
 function writeNginxConf(path, phpVersion, serviceName, confFile) {
@@ -41,7 +53,7 @@ function writeNginxConf(path, phpVersion, serviceName, confFile) {
   });
 
   // Écrire la configuration dans un fichier
-  const confPath = path.join(outputDir, `nginx_${confFile}.conf`);
+  const confPath = path.join(nginxConfsDir, `nginx_${confFile}.conf`);
   fs.writeFileSync(confPath, conf, 'utf8');
   console.log(`Configuration NGINX générée pour ${confFile} dans ${confPath}`);
 
@@ -49,8 +61,9 @@ function writeNginxConf(path, phpVersion, serviceName, confFile) {
 
 // Fonction générant les configs de nginx à partir des versions de PHP isntallées
 async function generateConfigsFromDocker() {
+  cleanConfDir();
   const versions = await getPhpVersionsFromDocker();
-  let latestVersion = versions[versions.length-1];
+  let latestVersion = process.env.DEFAULT_PHP_VERSION ?? versions[versions.length-1];
 
   versions.forEach( phpVersion => {
     const serviceName = "php-fpm"+ phpVersion;
@@ -58,30 +71,6 @@ async function generateConfigsFromDocker() {
       writeNginxConf(path, "", serviceName, "");
     writeNginxConf(path, phpVersion, serviceName);
   });
-  
-
-  // try {
-  //   const containers = await docker.listContainers();
-
-  //   containers.forEach(async (containerInfo) => {
-  //     const container = docker.getContainer(containerInfo.Id);
-  //     const data = await container.inspect();
-      
-  //     // Vérifier si l'image du conteneur est PHP
-  //     if (data.Config.Image.startsWith('php:')) {
-  //       const phpVersion = (data.Config.Image.split(':')[1] || 'default').replace('-fpm', '').replace('.', '');
-  //       const serviceName = data.Name.replace(/^\//, '');  // Retirer le slash du début
-        
-  //       // Si c'est la dernière version PHP installée, on la choisi par défaut
-  //       if(phpVersion == latestVersion)
-  //         writeNginxConf(path, "", serviceName, "");
-
-  //       writeNginxConf(path, phpVersion, serviceName);
-  //     }
-  //   });
-  // } catch (error) {
-  //   console.error("Erreur lors de la génération des configurations NGINX:", error);
-  // }
 }
 
 
@@ -289,7 +278,7 @@ async function generateMkcertCommand() {
   mkcertDomains.push(...traefikDomains.map(domain => `"${domain}"`));
 
   // Créer la commande
-  const mkcertCommand = `mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem ${mkcertDomains.join(" ")}\n\ndocker restart traefik`;
+  const mkcertCommand = `mkcert --install -cert-file certs/local-cert.pem -key-file certs/local-key.pem ${mkcertDomains.join(" ")}\n\ndocker restart traefik nginx`;
 
   // Enregistrer la commande dans un fichier install-certs.sh
   fs.writeFileSync('/install-certs.sh', `#!/bin/bash\n${mkcertCommand}\n`, { mode: 0o755 });

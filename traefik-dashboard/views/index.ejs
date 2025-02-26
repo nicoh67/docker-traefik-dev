@@ -86,9 +86,12 @@
                     <a href="vscode://file/<%= sitesFolderSystem + "/"+ route %>?windowId=_blank" title="Ouvrir dans VSCode">VSCode</a>
                 </div>
             </td>
+            <td>Versions PHP : 
             <% phpVersions.forEach((version, versionIndex) => { %>
-                <td><a href="https://<%= route + "." + nginxDomain + version +".localhost" %>">PHP v<%= version %></a></td>
+                <a href="https://<%= route + "." + nginxDomain + version +".localhost" %>"><%= version.substring(0,1) %>.<%= version.substring(1,2) %>
+                <% if(process.env.DEFAULT_PHP_VERSION==version) { %><small>(default)</small><% } %></a>
             <% }); %>
+            </td>
         </tr>
         <% }); %>
 
