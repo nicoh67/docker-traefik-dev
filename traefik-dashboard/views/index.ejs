@@ -78,12 +78,14 @@
             <th class=group colspan="<%= phpVersions.length + 1 %>">NGINX</th>
         </tr>
         
-        <% routes_nginx_with_subsubdomains.forEach((route, routeIndex) => { %>
+        <% routes_nginx_with_subsubdomains.forEach((route, routeIndex) => {
+            let route_vscode = typeof(route) == "string" ? route.split('.').reverse().join('/') : route; %>
+            %>
         <tr>
             <td <% if(route.indexOf('.') > 0) { %>style="padding-left:2em; font-size:.9em"<% } %>>
                 <div class=site>
                     <a href="https://<%= route + "."+ nginxDomain +".localhost" %>"><%= (route + "."+ nginxDomain +".localhost") %></a>
-                    <a href="vscode://file/<%= sitesFolderSystem + "/"+ route %>?windowId=_blank" title="Ouvrir dans VSCode">VSCode</a>
+                    <a href="vscode://file/<%= sitesFolderSystem + "/"+ route_vscode %>?windowId=_blank" title="Ouvrir dans VSCode">VSCode</a>
                 </div>
             </td>
             <td>Versions PHP : 

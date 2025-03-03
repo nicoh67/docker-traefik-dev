@@ -110,7 +110,7 @@ async function getPhpVersionsFromDocker() {
 
   try {
     const containers = await docker.listContainers({ all: true });
-    console.log("Containers trouvés :", containers.map(c => c.Image));
+    // console.log("Containers trouvés :", containers.map(c => c.Image));
 
     const versionPromises = containers.map(async (containerInfo) => {
       
@@ -298,7 +298,7 @@ app.get("/", async (req, res) => {
   const phpVersions = await getPhpVersionsFromDocker(); // Obtenez les versions de PHP
   const nginxDomain = process.env.NGINX_DOMAIN; // Obtenez les versions de PHP
   const sitesFolderSystem = process.env.SITES_FOLDER_SYSTEM; // Dossier des SITES
-  console.log(sitesFolderSystem);
+  // console.log(sitesFolderSystem);
   
   // const phpVersions = getPhpVersionsFromNginxConfig(); // Obtenez les versions de PHP
   res.render('index', { routes, routes_nginx, routes_nginx_with_subsubdomains, phpVersions, nginxDomain, sitesFolderSystem }); // Rendre le fichier EJS
