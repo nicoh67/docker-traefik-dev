@@ -162,6 +162,22 @@ function getNginxSites() {
 //   return sites;
 // }
 
+function getGitOrigin(repoPath) {
+    let gitConfigPath = path.join(repoPath, '.git', 'config');
+    if (!fs.existsSync(gitConfigPath)) {
+      gitConfigPath = path.join(repoPath, 'git-repo', 'config');
+      if (!fs.existsSync(gitConfigPath)) {
+          return null; // Pas de Git trouvé
+      }
+    }
+
+    const configContent = fs.readFileSync(gitConfigPath, 'utf-8');
+    const match = configContent.match(/\[remote "origin"\][\s\S]*?url = (.+)/);
+
+    return match ? match[1].trim() : null;
+}
+
+
 function getNginxSitesAndSubsites() {
   return [ ['phpinfo'], ...fs.readdirSync(sitesPath).flatMap(subdomain => {
     const subdomainPath = path.join(sitesPath, subdomain);
