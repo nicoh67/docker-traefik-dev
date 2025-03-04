@@ -2,8 +2,9 @@
 
 docker network create web
 
-touch ./certs.sh
-chmod +xw ./certs.sh
+touch ./certs/certs.sh
+chmod +xw ./certs/certs.sh
+chmod +xw ./install-certs.sh
 
 # Vérifie si le fichier .env existe, sinon copie .env.default vers .env
 if [ ! -f .env ]; then

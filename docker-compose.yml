@@ -87,7 +87,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/default-site.conf:/etc/nginx/default-site.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./certs.sh:/certs.sh
+      - ./certs:/certs
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${SITES_FOLDER}:/var/www/sites  # Même volume partagé avec PHP
       - ./traefik-dashboard/server.js:/usr/src/app/server.js  # Monter le fichier server.js
