@@ -164,8 +164,11 @@ function getNginxSites() {
 
 function getGitOrigin(repoPath) {
     let gitConfigPath = path.join(repoPath, '.git', 'config');
+    console.log(gitConfigPath);
+    
     if (!fs.existsSync(gitConfigPath)) {
       gitConfigPath = path.join(repoPath, 'git-repo', 'config');
+      console.log(gitConfigPath);
       if (!fs.existsSync(gitConfigPath)) {
           return null; // Pas de Git trouvé
       }
@@ -178,7 +181,7 @@ function getGitOrigin(repoPath) {
 }
 
 
-function getNginxSitesAndSubsites() {
+function getNginxSitesAndSubsites2() {
   return [ ['phpinfo'], ...fs.readdirSync(sitesPath).flatMap(subdomain => {
     const subdomainPath = path.join(sitesPath, subdomain);
 
@@ -214,6 +217,51 @@ function getNginxSitesAndSubsites() {
     return [];
   })];
 }
+
+function getNginxSitesAndSubsites() {
+  const result = {};
+
+  // Le tableau 'phpinfo' sera ajouté directement dans l'objet si nécessaire
+  result["phpinfo"] = { gitOrigin: null };
+
+  // Parcourir les sous-domaines et sous-sous-domaines
+  fs.readdirSync(sitesPath).forEach(subdomain => {
+    const subdomainPath = path.join(sitesPath, subdomain);
+
+    if (fs.statSync(subdomainPath).isDirectory()) {
+      const validPublicDirs = ['public', 'public_html'];
+      const hasPublicDir = validPublicDirs.some(dir => fs.existsSync(path.join(subdomainPath, dir)));
+
+      if (hasPublicDir) {
+        // Ajoute le sous-domaine s'il contient un "public" ou "public_html"
+        result[subdomain] = { gitOrigin: getGitOrigin(subdomainPath) };
+        console.log(subdomainPath);
+        
+      }
+
+      // Recherche les sous-sous-domaines
+      let subsubdomains = fs.readdirSync(subdomainPath)
+        .filter(subsubdomain => {
+          const subsubdomainPath = path.join(subdomainPath, subsubdomain);
+          if (fs.statSync(subsubdomainPath).isDirectory()) {
+            const hasPublicDir = validPublicDirs.some(dir => fs.existsSync(path.join(subsubdomainPath, dir)));
+            return hasPublicDir;
+          }
+          return false;
+        });
+
+      // Ajoute les sous-sous-domaines valides
+      subsubdomains.forEach(subsubdomain => {
+        result[`${subsubdomain}.${subdomain}`] = { gitOrigin: getGitOrigin(path.join(subdomainPath, subsubdomain)) };
+        console.log(path.join(subdomainPath, subsubdomain));
+      });
+
+    }
+  });
+
+  return result;
+}
+
 
   
 
