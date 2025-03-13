@@ -1,7 +1,7 @@
 
 # Récupérer le dossier du script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_TO_RUN="$SCRIPT_DIR/certs.sh"
+SCRIPT_TO_RUN="$SCRIPT_DIR/certs/certs.sh"
 
 # Détection de l'environnement
 if grep -qi microsoft /proc/version; then
