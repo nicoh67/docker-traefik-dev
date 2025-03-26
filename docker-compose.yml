@@ -75,14 +75,13 @@ services:
 
 
   traefik-dashboard:
+    stop_grace_period: 0s
     build:
       context: ./traefik-dashboard  # Où tu as mis le Dockerfile et le code Node.js
     container_name: traefik-dashboard
     restart: unless-stopped
     depends_on:
       - traefik
-    command:
-      - "--server.graceTimeout=0s"
     env_file:
       - .env
     volumes:
