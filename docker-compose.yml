@@ -81,6 +81,8 @@ services:
     restart: unless-stopped
     depends_on:
       - traefik
+    command:
+      - "--server.graceTimeout=0s"
     env_file:
       - .env
     volumes:
