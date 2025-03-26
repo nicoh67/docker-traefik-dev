@@ -127,6 +127,7 @@ services:
       - "traefik.http.routers.nginx.entrypoints=http,https"
       - "traefik.http.routers.nginx.tls=true"
       - "traefik.http.services.nginx.loadbalancer.server.port=80"
+      - "traefik.http.routers.nginx.priority=1"  # 👈 basse priorité
     networks:
       - web
 
