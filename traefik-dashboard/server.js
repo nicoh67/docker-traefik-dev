@@ -231,12 +231,13 @@ function getNginxSitesAndSubsites() {
     if (fs.statSync(subdomainPath).isDirectory()) {
       const validPublicDirs = ['public', 'public_html'];
       const hasPublicDir = validPublicDirs.some(dir => fs.existsSync(path.join(subdomainPath, dir)));
+      const hasIndexFile = fs.existsSync(path.join(subdomainPath, 'index.php')) ||
+                           fs.existsSync(path.join(subdomainPath, 'index.html'));
 
-      if (hasPublicDir) {
+      if (hasPublicDir || hasIndexFile) {
         // Ajoute le sous-domaine s'il contient un "public" ou "public_html"
         result[subdomain] = { gitOrigin: getGitOrigin(subdomainPath) };
         console.log(subdomainPath);
-        
       }
 
       // Recherche les sous-sous-domaines
@@ -245,7 +246,12 @@ function getNginxSitesAndSubsites() {
           const subsubdomainPath = path.join(subdomainPath, subsubdomain);
           if (fs.statSync(subsubdomainPath).isDirectory()) {
             const hasPublicDir = validPublicDirs.some(dir => fs.existsSync(path.join(subsubdomainPath, dir)));
-            return hasPublicDir;
+            const hasIndexFile =
+                                path.basename(subsubdomainPath) != 'public' && (
+                                fs.existsSync(path.join(subsubdomainPath, 'index.php')) ||
+                                fs.existsSync(path.join(subsubdomainPath, 'index.html'))
+                              );
+            return hasPublicDir || hasIndexFile;
           }
           return false;
         });

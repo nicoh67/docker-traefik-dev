@@ -9,6 +9,8 @@ Ce guide vous permet de configurer un environnement de développement local avec
 2. **Docker Compose** : Docker Compose doit également être installé.
 3. **mkcert** : Installez `mkcert` pour générer des certificats SSL auto-signés.
 
+- Traefik v3 (les HostRegex fonctionnent différement en v2).
+
 ## Installation de `mkcert`
 
 Installez `mkcert` sur votre machine LOCALE (si vous êtes sous Windows avec WSL, **lancez mkcert sous Windows**, pas sous WSL) :
